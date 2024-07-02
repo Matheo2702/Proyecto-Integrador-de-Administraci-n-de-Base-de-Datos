@@ -1,0 +1,51 @@
+—— DESCARGAR DOCKER Y CREAR EL CONTENEDOR ——
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+sudo apt install docker-ce
+sudo systemctl status docker
+sudo docker pull postgres:latest
+sudo docker volume create pgdata
+sudo docker run --name proyectofinal -e POSTGRES_PASSWORD=proyectofinal -d -p 5433:5432 -v pgdata:/var/lib/postgresql/data --restart always postgres
+sudo docker ps
+sudo docker cp proyectofinal:/var/lib/postgresql/data/postgresql.conf ./postgresql.conf
+docker stop proyectofinal
+cat <<EOL > Dockerfile
+FROM postgres
+COPY postgresql.conf /etc/postgresql/postgresql.conf
+RUN chown postgres:postgres /etc/postgresql/postgresql.conf
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+EOL
+ls
+sudo docker build -t mi_postgres .
+sudo docker stop proyectofinal
+sudo docker rm proyectofinal
+sudo docker run --name proyecto-final -e POSTGRES_PASSWORD=proyectofinal -d -p 2222:5555 -v ~/Escritorio/pgdata:/var/lib/postgresql/data --restart always mi_postgres
+sudo docker ps
+
+—— CONEXIÓN CON LA BASE DE DATOS——
+ip addr
+
+—— INSTALACIÓN DE FAKER ——
+sudo apt install python3-venv
+python3 -m venv myenv
+source myenv/bin/activate
+pip install faker
+sudo apt install libpq-dev python3-dev
+pip install psycopg2
+sudo nano datos.py
+python datos.py
+sudo nano datos.py
+python3 datos.py
+  
+— — PARA VERIFICAR LOS CONTENEDORES EN EJECUCIÓN — — 
+sudo docker ps
+
+— — PARA VERIFICAR PUERTOS EXPUESTOS — —
+sudo docker port proyecto-final
+
+— — PARA INGRESAR A LA BASE DE DATOS — — 
+sudo docker exec -it proyecto-final  bash
+psql -h 172.16.185.131 -U postgres -p 2222
