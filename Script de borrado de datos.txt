@@ -1,0 +1,20 @@
+-----PARA BORRAR TODOS LOS DATOS DE LA TABLA------
+
+-- Deshabilitar temporalmente las restricciones de claves 
+SET session_replication_role = 'replica';
+
+-- Truncar todas las tablas
+TRUNCATE TABLE agenciadeviajes.pagos RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.reservas RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.descuentosPaquetes RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.vuelos RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.actividades RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.ofertas RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.paquetes RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.clientes RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.empleados RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.destinos RESTART IDENTITY CASCADE;
+TRUNCATE TABLE agenciadeviajes.hoteles RESTART IDENTITY CASCADE;
+
+-- Habilitar de nuevo las restricciones de claves
+SET session_replication_role = 'origin';

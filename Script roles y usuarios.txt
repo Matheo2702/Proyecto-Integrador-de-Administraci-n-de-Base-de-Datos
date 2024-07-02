@@ -1,0 +1,69 @@
+--Creación del Rol de solo lectura
+CREATE ROLE rol_lectura;
+GRANT SELECT ON ALL TABLES IN SCHEMA agenciadeviajes TO rol_lectura;
+
+-- Creación de Rol de manipulación de datos
+GRANT CONNECT ON DATABASE postgres TO readwrite;
+GRANT USAGE ON SCHEMA agenciadeviajes TO readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA agenciadeviajes TO readwrite;
+ALTER DEFAULT PRIVILEGES IN SCHEMA agenciadeviajes GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO readwrite;
+
+-- Otorgar permisos en todas las secuencias del esquema agenciadeviajes
+DO $$ 
+DECLARE
+    seq RECORD;
+BEGIN
+    FOR seq IN
+        SELECT sequence_schema, sequence_name
+        FROM information_schema.sequences
+        WHERE sequence_schema = 'agenciadeviajes'
+    LOOP
+        EXECUTE 'GRANT USAGE, UPDATE ON SEQUENCE ' || quote_ident(seq.sequence_schema) || '.' || quote_ident(seq.sequence_name) || ' TO readwrite';
+    END LOOP;
+END $$;
+
+-- Otorgar permisos predeterminados para tablas futuras
+ALTER DEFAULT PRIVILEGES IN SCHEMA agenciadeviajes
+GRANT INSERT, DELETE, UPDATE, SELECT ON TABLES TO readwrite;
+
+-- Otorgar permisos predeterminados para secuencias futuras
+ALTER DEFAULT PRIVILEGES IN SCHEMA agenciadeviajes
+GRANT USAGE, UPDATE ON SEQUENCES TO readwrite;
+
+--Creación de Usuarios
+
+CREATE USER matheo_oviedo WITH PASSWORD 'P0sTg32-';
+CREATE USER daniel_galiano WITH PASSWORD 'P0sTg32-';
+
+--Asignación de roles
+GRANT readonly TO matheo_oviedo;
+GRANT readwrite TO daniel_galiano;
+
+--Verificar los privilegios que tiene el rol de lectura sobre las tablas
+SELECT grantee, table_name, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'agenciadeviajes'
+  AND grantee IN ('readonly');
+
+--Verificar los privilegios que tiene el rol de modifiación sobre las tablas
+SELECT grantee, table_name, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'agenciadeviajes'
+  AND grantee IN ('readwrite');
+
+------ PRUEBAS DE PRIVILEGIOS EN EL USUARIO readwrite -------
+--Insertar datos en la tabla hoteles
+INSERT INTO agenciadeviajes.hoteles (nombre, direccion, ciudad, pais, telefono, precioNoche)
+VALUES ('Hotel Test', '123 Calle Falsa', 'Quito', 'Ecuador', '0987653321', 100);
+
+-- Actualizar datos en la tabla hoteles
+UPDATE agenciadeviajes.hoteles
+SET direccion = '456 Calle Verdadera'
+WHERE nombre = 'Hotel Test';
+
+-- Eliminar datos en la tabla hoteles
+DELETE FROM agenciadeviajes.hoteles
+WHERE nombre = 'Hotel Test';
+
+-- Verificación de datos insertados
+SELECT * FROM agenciadeviajes.hoteles;
