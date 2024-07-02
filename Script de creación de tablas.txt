@@ -1,0 +1,146 @@
+-- Crear el esquema AgenciaDeViajes si no existe
+CREATE SCHEMA IF NOT EXISTS AgenciaDeViajes;
+
+-- Establecer el esquema por defecto
+SET search_path TO AgenciaDeViajes;
+
+-- Tabla: hoteles
+CREATE TABLE AgenciaDeViajes.hoteles (
+    hotelID SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    direccion VARCHAR(100) NOT NULL,
+    ciudad VARCHAR(50) NOT NULL,
+    pais VARCHAR(50) NOT NULL,
+    telefono VARCHAR(10) NOT NULL UNIQUE,
+    precioNoche MONEY NOT NULL,
+    CONSTRAINT chTelefonoHotel CHECK (telefono ~ '^[0-9]{10}$')
+);
+
+-- Tabla: destinos
+CREATE TABLE AgenciaDeViajes.destinos (
+    destinoID SERIAL PRIMARY KEY,
+    ciudad VARCHAR(50) NOT NULL,
+    pais VARCHAR(50) NOT NULL,
+    descripcion VARCHAR(200) NOT NULL,
+    precioBase MONEY NOT NULL
+);
+
+-- Tabla: empleados
+CREATE TABLE AgenciaDeViajes.empleados (
+    empleadoID SERIAL PRIMARY KEY,
+    cedula VARCHAR(10) NOT NULL UNIQUE,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    direccion VARCHAR(100) NOT NULL,
+    telefono VARCHAR(10) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    cargo VARCHAR(50) NOT NULL,
+    fechaContratacion DATE NOT NULL,
+    CONSTRAINT chCedulaEmpleado CHECK (cedula ~ '^[0-9]{10}$'),
+    CONSTRAINT chTelefonoEmpleado CHECK (telefono ~ '^[0-9]{10}$')
+);
+
+-- Tabla: clientes
+CREATE TABLE AgenciaDeViajes.clientes (
+    clienteID SERIAL PRIMARY KEY,
+    cedula VARCHAR(10) NOT NULL UNIQUE,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    direccion VARCHAR(100) NOT NULL,
+    telefono VARCHAR(10) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    fechaRegistro DATE NOT NULL,
+    CONSTRAINT chCedulaCliente CHECK (cedula ~ '^[0-9]{10}$'),
+    CONSTRAINT chTelefonoCliente CHECK (telefono ~ '^[0-9]{10}$')
+);
+
+-- Tabla: paquetes
+CREATE TABLE AgenciaDeViajes.paquetes (
+    paqueteID SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion VARCHAR(200) NOT NULL,
+    precio MONEY NOT NULL,
+    duracion SMALLINT NOT NULL,
+    fechaInicio DATE NOT NULL,
+    fechaFin DATE NOT NULL
+);
+
+-- Tabla: ofertas
+CREATE TABLE AgenciaDeViajes.ofertas (
+    ofertaID SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion VARCHAR(200) NOT NULL,
+    descuento DECIMAL(5, 2) NOT NULL,
+    fechaInicio DATE NOT NULL,
+    fechaFin DATE NOT NULL
+);
+
+-- Tabla: actividades
+CREATE TABLE AgenciaDeViajes.actividades (
+    actividadID SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion VARCHAR(200) NOT NULL,
+    precio MONEY NOT NULL,
+    duracion SMALLINT NOT NULL,
+    ciudad VARCHAR(100) NOT NULL
+);
+
+-- Tabla: reservas
+CREATE TABLE AgenciaDeViajes.reservas (
+    reservaID SERIAL PRIMARY KEY,
+    clienteID INT NOT NULL,
+    paqueteID INT,
+    hotelID INT,
+    actividadID INT,
+    empleadoID INT,
+    vueloID INT,
+    pagoID INT,
+    fechaReserva DATE NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    fechaEntradaHotel DATE,
+    fechaSalidaHotel DATE,
+    habitacionHotel SMALLINT,
+    asientoVuelo SMALLINT,
+    fechaActividad DATE,
+    FOREIGN KEY (clienteID) REFERENCES AgenciaDeViajes.clientes(clienteID),
+    FOREIGN KEY (paqueteID) REFERENCES AgenciaDeViajes.paquetes(paqueteID),
+    FOREIGN KEY (hotelID) REFERENCES AgenciaDeViajes.hoteles(hotelID),
+    FOREIGN KEY (actividadID) REFERENCES AgenciaDeViajes.actividades(actividadID),
+    FOREIGN KEY (empleadoID) REFERENCES AgenciaDeViajes.empleados(empleadoID),
+    FOREIGN KEY (vueloID) REFERENCES AgenciaDeViajes.vuelos(vueloID)
+);
+
+-- Tabla: pagos
+CREATE TABLE AgenciaDeViajes.pagos (
+    pagoID SERIAL PRIMARY KEY,
+    reservaID INT NOT NULL,
+    monto MONEY NOT NULL,
+    fechaPago VARCHAR(50) NOT NULL,
+    metodoPago VARCHAR(50) NOT NULL,
+    FOREIGN KEY (reservaID) REFERENCES AgenciaDeViajes.reservas(reservaID)
+);
+
+-- Tabla: vuelos
+CREATE TABLE AgenciaDeViajes.vuelos (
+    vueloID SERIAL PRIMARY KEY,
+    numeroVuelo VARCHAR(15) NOT NULL UNIQUE,
+    aerolinea VARCHAR(50) NOT NULL,
+    origen VARCHAR(50) NOT NULL,
+    destinoID INT NOT NULL,
+    fechaSalida DATE NOT NULL,
+    fechaLlegada DATE NOT NULL,
+    precio MONEY NOT NULL,
+    FOREIGN KEY (destinoID) REFERENCES AgenciaDeViajes.destinos(destinoID)
+);
+
+-- Tabla: descuentosPaquetes
+CREATE TABLE AgenciaDeViajes.descuentosPaquetes (
+    descuentosPaquetesID SERIAL PRIMARY KEY,
+    paqueteID INT NOT NULL,
+    ofertaID INT NOT NULL,
+    FOREIGN KEY (paqueteID) REFERENCES AgenciaDeViajes.paquetes(paqueteID),
+    FOREIGN KEY (ofertaID) REFERENCES AgenciaDeViajes.ofertas(ofertaID)
+);
+
+
+
